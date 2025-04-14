@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html>
+
+<!--
+ Use OpenGL and GLUT to draw a simple cube
+  with each face being a different color.  Rotations
+  can be applied with the arrow keys, the page up
+  key, and the page down key.  The home key will set
+  all rotations to 0.  Initial rotations about the
+  x, y, and z axes are 15, -15, and 0.  
+
+  This program is meant as an example of using modeling
+  transforms, with glPushMatrix and glPopMatrix.
+ 
+  Note that this program does not use lighting.
+-->
+
+<head>
+<meta charset="UTF-8">
+<title>Unlit Cube Example</title>
+
+<script src="glsim.js"></script>  <!-- load the OpenGL 1.1 simulation code -->
+
+<script>
+    let rotateX = 15;
+    let rotateY = -15;
+    let rotateZ = 0;
+    let objectNumber = 1;
+
+    function drawObject1() {
+        glColor3f(0, 1, 0); // Zielony
+        glBegin(GL_POINTS);
+        let turns = 10;
+        let steps = 500;
+        for (let i = 0; i < steps; i++) {
+            let t = (i / steps) * turns * Math.PI * 2;
+            let radius = 0.1 + 0.4 * (i / steps);
+            let x = radius * Math.cos(t);
+            let y = radius * Math.sin(t);
+            let z = (i / steps) * 2 - 1; // od -1 do 1
+            glVertex3f(x, y, z);
+        }
+        glEnd();
+    }
+
+    function drawTriangle() {
+        glBegin(GL_TRIANGLES);
+        glVertex3f(0, 0, 0);       // środek podstawy
+        glVertex3f(1, 0, 0);       // wierzchołek podstawy
+        glVertex3f(0, 0, 1);       // wierzchołek piramidy
+        glEnd();
+    }
+
+    function drawObject2() {
+        const baseVertices = 10;
+        const radius = 0.6;
+        let angleStep = (2 * Math.PI) / baseVertices;
+
+        // Rysujemy podstawę jako wachlarz
+        glColor3f(0.7, 0.4, 0.1); // brązowy
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(0, 0, 0); // środek podstawy
+        for (let i = 0; i <= baseVertices; i++) {
+            let angle = i * angleStep;
+            let x = radius * Math.cos(angle);
+            let y = radius * Math.sin(angle);
+            glVertex3f(x, y, 0);
+        }
+        glEnd();
+
+        // Rysujemy ściany boczne jako drugi wachlarz
+        glColor3f(0.9, 0.6, 0.2); // jaśniejszy brąz
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(0, 0, 1); // wierzchołek piramidy
+        for (let i = 0; i <= baseVertices; i++) {
+            let angle = i * angleStep;
+            let x = radius * Math.cos(angle);
+            let y = radius * Math.sin(angle);
+            glVertex3f(x, y, 0);
+        }
+        glEnd();
+    }
+
+    function display() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glLoadIdentity();
+        glRotatef(rotateZ, 0, 0, 1);
+        glRotatef(rotateY, 0, 1, 0);
+        glRotatef(rotateX, 1, 0, 0);
+
+        if (objectNumber === 1) {
+            drawObject1();
+        } else if (objectNumber === 2) {
+            drawObject2();
+        }
+    }
+
+    function initGL() {
+        glMatrixMode(GL_PROJECTION);
+        glOrtho(-1, 1, -1, 1, -1, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glEnable(GL_DEPTH_TEST);
+        glPointSize(3); // zwiększenie rozmiaru punktów korkociągu
+        glClearColor(0, 0, 0, 1);
+    }
+
+    function doKeyDown(evt) {
+        let key = evt.keyCode;
+        if (key == 49) objectNumber = 1; // klawisz "1"
+        else if (key == 50) objectNumber = 2; // klawisz "2"
+        else if (key == 37) rotateY -= 15; // lewo
+        else if (key == 39) rotateY += 15; // prawo
+        else if (key == 40) rotateX += 15; // dół
+        else if (key == 38) rotateX -= 15; // góra
+        else if (key == 33) rotateZ += 15; // PgUp
+        else if (key == 34) rotateZ -= 15; // PgDown
+        else if (key == 36) rotateX = rotateY = rotateZ = 0; // Home
+        if ((key >= 33 && key <= 40) || key == 49 || key == 50 || key == 36) {
+            evt.preventDefault();
+        }
+        display();
+    }
+
+    function init() {
+        try {
+            glsimUse("glcanvas");
+        } catch (e) {
+            document.getElementById("canvas-holder").innerHTML = "Błąd: " + e;
+            return;
+        }
+        document.onkeydown = doKeyDown;
+        initGL();
+        display();
+    }
+</script>
+
+</head>
+
+<body onload="init()">
+
+<h3>A Simple Unlit Cube in OpenGL 1.1</h3>
+
+<p>(Rotate using arrow keys, page up, page down, and home keys.)</p>
+
+<noscript>
+<p><b>Sorry, this page requires JavaScript!</b></p>
+</noscript>
+
+<div id="canvas-holder">
+<canvas id="glcanvas" width="500" height="500"></canvas>
+</div>
+
+</body>
+</html>
